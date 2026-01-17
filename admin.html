@@ -1,116 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RightClick Admin Panel</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RightClick Admin Panel</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css">
 </head>
 <body class="bg-gray-50 font-sans">
 
-  <header class="bg-white shadow p-4 flex items-center">
-    <img src="https://github.com/keerthynaidu4u-netizen/rightclick-crm/blob/main/logo.png" alt="Logo" class="h-10 w-10 mr-4">
-    <div class="flex flex-col">
-      <span class="text-xl font-bold">Admin Panel</span>
-      <span class="text-gray-600 text-sm">RightClick Computers Services</span>
-    </div>
-  </header>
+<header class="bg-white shadow p-4 flex items-center">
+  <img src="https://github.com/keerthynaidu4u-netizen/rightclick-crm/blob/main/logo.png" alt="Logo" class="h-10 w-10 mr-4">
+  <div class="flex flex-col">
+    <span class="text-xl font-bold">Admin Panel</span>
+    <span class="text-gray-600 text-sm">RightClick Computers Services</span>
+  </div>
+</header>
 
-  <main class="p-4">
-    <div class="overflow-x-auto">
-      <table class="min-w-full border border-gray-300">
-        <thead class="bg-gray-200">
-          <tr>
-            <th class="px-2 py-1 border">Job ID</th>
-            <th class="px-2 py-1 border">Customer Name</th>
-            <th class="px-2 py-1 border">Phone</th>
-            <th class="px-2 py-1 border">Date & Time</th>
-            <th class="px-2 py-1 border">Device Type</th>
-            <th class="px-2 py-1 border">Device Name</th>
-            <th class="px-2 py-1 border">Device ID</th>
-            <th class="px-2 py-1 border">Accessories</th>
-            <th class="px-2 py-1 border">Accessories Description</th>
-            <th class="px-2 py-1 border">Estimation</th>
-            <th class="px-2 py-1 border">Diagnosis</th>
-            <th class="px-2 py-1 border">Status</th>
-            <th class="px-2 py-1 border">Action</th>
-          </tr>
-        </thead>
-        <tbody id="adminTableBody"></tbody>
-      </table>
-    </div>
-  </main>
+<main class="p-4">
+  <div class="overflow-x-auto">
+    <table class="min-w-full border border-gray-300">
+      <thead class="bg-gray-200">
+        <tr>
+          <th class="px-2 py-1 border">Job ID</th>
+          <th class="px-2 py-1 border">Customer Name</th>
+          <th class="px-2 py-1 border">Phone</th>
+          <th class="px-2 py-1 border">Date & Time</th>
+          <th class="px-2 py-1 border">Device Type</th>
+          <th class="px-2 py-1 border">Device Name</th>
+          <th class="px-2 py-1 border">Device ID</th>
+          <th class="px-2 py-1 border">Accessories</th>
+          <th class="px-2 py-1 border">Accessories Description</th>
+          <th class="px-2 py-1 border">Estimation</th>
+          <th class="px-2 py-1 border">Diagnosis</th>
+          <th class="px-2 py-1 border">Status</th>
+          <th class="px-2 py-1 border">Action</th>
+        </tr>
+      </thead>
+      <tbody id="adminTableBody"></tbody>
+    </table>
+  </div>
+</main>
 
-  <script>
-    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbzdwEAtfdDdKtvcp5lyLvqlo0aK4dyR_5M675mjoy0UJvr3SGMsUI7CBZVEld1tYSW1Nw/exec"; // Replace with your deployed Web App URL
+<script>
+const SHEET_API_URL = "https://script.google.com/macros/library/d/1KrucICW-4OWNgQV73CSKWIg5HIs0jwDQLFZvqlY7VpyWRGrJxC21Eqsh/9";
 
-    async function fetchJobs() {
-      try {
-        const response = await fetch(SHEET_API_URL);
-        const jobs = await response.json();
-        if(jobs.error) { alert(jobs.error); return; }
-        renderAdminTable(jobs);
-      } catch(e) { console.error(e); alert("Error fetching jobs"); }
-    }
+// Fetch jobs from Google Sheet
+async function fetchJobs() {
+  try {
+    const res = await fetch(SHEET_API_URL);
+    const jobs = await res.json();
+    if(jobs.error) { alert(jobs.error); return; }
+    renderTable(jobs);
+  } catch(e) {
+    console.error(e);
+    alert("Error fetching jobs. Make sure Web App URL is correct and deployed.");
+  }
+}
 
-    function renderAdminTable(jobs) {
-      const tableBody = document.getElementById("adminTableBody");
-      tableBody.innerHTML = "";
-      jobs.forEach(job => {
-        const row = document.createElement("tr");
-        row.classList.add("border-b");
+// Render table
+function renderTable(jobs) {
+  const tbody = document.getElementById("adminTableBody");
+  tbody.innerHTML = "";
 
-        row.innerHTML = `
-          <td class="px-2 py-1 border">${job.JobID || ""}</td>
-          <td class="px-2 py-1 border">${job.CustomerName || ""}</td>
-          <td class="px-2 py-1 border">${job.Phone || ""}</td>
-          <td class="px-2 py-1 border">${job.DateTimeReceived || ""}</td>
-          <td class="px-2 py-1 border">${job.DeviceType || ""}</td>
-          <td class="px-2 py-1 border">${job.DeviceName || ""}</td>
-          <td class="px-2 py-1 border">${job.DeviceID || ""}</td>
-          <td class="px-2 py-1 border">${job.Accessories || ""}</td>
-          <td class="px-2 py-1 border">${job.AccessoriesDescription || ""}</td>
-          <td class="px-2 py-1 border">${job.Estimation || ""}</td>
-          <td class="px-2 py-1 border">${job.Diagnosis || ""}</td>
-          <td class="px-2 py-1 border">
-            <select class="border px-1 py-0.5" onchange="updateStatus('${job.JobID}', this.value)">
-              <option value="Received" ${job.Status==='Received'?'selected':''}>Received</option>
-              <option value="In Progress" ${job.Status==='In Progress'?'selected':''}>In Progress</option>
-              <option value="Ready" ${job.Status==='Ready'?'selected':''}>Ready</option>
-              <option value="Delivered" ${job.Status==='Delivered'?'selected':''}>Delivered</option>
-            </select>
-          </td>
-          <td class="px-2 py-1 border">
-            <button class="bg-green-500 text-white px-2 py-1 rounded mt-1" onclick="sendWhatsApp('${job.JobID}','${job.CustomerName}','${job.Phone}','${job.Estimation}','${job.Diagnosis}')">Send WhatsApp</button>
-          </td>
-        `;
-        tableBody.appendChild(row);
-      });
-    }
+  jobs.forEach(job => {
+    const row = document.createElement("tr");
+    row.classList.add("border-b");
 
-    async function updateStatus(jobId, newStatus) {
-      try {
-        await fetch(SHEET_API_URL, {
-          method: 'POST',
-          body: JSON.stringify({JobID: jobId, Status: newStatus}),
-          headers: { 'Content-Type': 'application/json' }
-        });
-        alert(`Job ${jobId} status updated to ${newStatus}`);
-      } catch(e) { console.error(e); alert("Failed to update status"); }
-    }
+    row.innerHTML = `
+      <td class="px-2 py-1 border">${job.JobID || ""}</td>
+      <td class="px-2 py-1 border">${job.CustomerName || ""}</td>
+      <td class="px-2 py-1 border">${job.Phone || ""}</td>
+      <td class="px-2 py-1 border">${job.DateTimeReceived || ""}</td>
+      <td class="px-2 py-1 border">${job.DeviceType || ""}</td>
+      <td class="px-2 py-1 border">${job.DeviceName || ""}</td>
+      <td class="px-2 py-1 border">${job.DeviceID || ""}</td>
+      <td class="px-2 py-1 border">${job.Accessories || ""}</td>
+      <td class="px-2 py-1 border">${job.AccessoriesDescription || ""}</td>
+      <td class="px-2 py-1 border">${job.Estimation || ""}</td>
+      <td class="px-2 py-1 border">${job.Diagnosis || ""}</td>
+      <td class="px-2 py-1 border">
+        <select class="border px-1 py-0.5" onchange="updateStatus('${job.JobID}', this.value)">
+          <option value="Received" ${job.Status==='Received'?'selected':''}>Received</option>
+          <option value="In Progress" ${job.Status==='In Progress'?'selected':''}>In Progress</option>
+          <option value="Ready" ${job.Status==='Ready'?'selected':''}>Ready</option>
+          <option value="Delivered" ${job.Status==='Delivered'?'selected':''}>Delivered</option>
+        </select>
+      </td>
+      <td class="px-2 py-1 border">
+        <button class="bg-green-500 text-white px-2 py-1 rounded mt-1"
+          onclick="sendWhatsApp('${job.JobID}','${job.CustomerName}','${job.Phone}','${job.Estimation}','${job.Diagnosis}')">
+          Send WhatsApp
+        </button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
 
-    function sendWhatsApp(jobId, name, phone, estimation, diagnosis) {
-      // Customer link
-      const customerMsg = encodeURIComponent(`RIGHTCLICK COMPUTERS\nJob ID: ${jobId}\nName: ${name}\nEstimation: ${estimation}\nDiagnosis: ${diagnosis}\nTrack your job: YOUR_TRACK_LINK`);
-      window.open(`https://wa.me/${phone}?text=${customerMsg}`, "_blank");
+// Update status in Google Sheet
+async function updateStatus(jobId, newStatus) {
+  try {
+    const res = await fetch(SHEET_API_URL, {
+      method: 'POST',
+      body: JSON.stringify({JobID: jobId, Status: newStatus}),
+      headers: {'Content-Type': 'application/json'}
+    });
+    const result = await res.json();
+    if(result.result === "success") alert(`Job ${jobId} updated to ${newStatus}`);
+    else alert("Failed to update status");
+  } catch(e) { console.error(e); alert("Error updating status"); }
+}
 
-      // Owner (Avinash) message
-      const ownerMsg = encodeURIComponent(`RIGHTCLICK COMPUTERS\nJob ID: ${jobId}\nCustomer: ${name}\nPhone: ${phone}\nEstimation: ${estimation}\nDiagnosis: ${diagnosis}\nOwner Contact: +919059895427`);
-      window.open(`https://wa.me/919059895427?text=${ownerMsg}`, "_blank");
-    }
+// Send WhatsApp message
+function sendWhatsApp(jobId, name, phone, estimation, diagnosis) {
+  // Customer message
+  const customerMsg = encodeURIComponent(
+    `RIGHTCLICK COMPUTERS\nJob ID: ${jobId}\nName: ${name}\nEstimation: ${estimation}\nDiagnosis: ${diagnosis}\nTrack your job: YOUR_TRACK_LINK`
+  );
+  window.open(`https://wa.me/${phone}?text=${customerMsg}`, "_blank");
 
-    fetchJobs();
-  </script>
+  // Owner (Avinash) message
+  const ownerMsg = encodeURIComponent(
+    `RIGHTCLICK COMPUTERS\nJob ID: ${jobId}\nCustomer: ${name}\nPhone: ${phone}\nEstimation: ${estimation}\nDiagnosis: ${diagnosis}\nOwner Contact: +919059895427`
+  );
+  window.open(`https://wa.me/919059895427?text=${ownerMsg}`, "_blank");
+}
+
+// Load jobs on page load
+fetchJobs();
+</script>
 
 </body>
 </html>

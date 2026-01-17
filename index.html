@@ -120,7 +120,27 @@ function updateAccessoryDescription() {
   }
 }
 
-function generateJob() {
+  function generateJob() {
+    // Save job to localStorage
+let jobs = JSON.parse(localStorage.getItem('jobs') || '[]');
+jobs.push({
+  jobId: jobId,
+  customer: customer,
+  phone: phone,
+  dateTime: dateTime,
+  device: device,
+  deviceName: deviceName,
+  deviceId: deviceId,
+  accessory: accessory,
+  accessoryDesc: accessoryDesc || otherDesc,
+  estimate: estimate,
+  diagnosis: diagnosis,
+  status: 'Received',
+  repair: '',
+  paymentMode: '',
+  amount: ''
+});
+localStorage.setItem('jobs', JSON.stringify(jobs));
   const jobId = "RC-" + Date.now();
   const customer = document.getElementById("customerName").value;
   const phone = document.getElementById("phone").value;

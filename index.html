@@ -1,224 +1,99 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>RightClick CRM</title>
+  <title>RightClick CRM Acknowledgement</title>
   <style>
-    body { font-family: Arial; padding: 20px; max-width: 500px; margin: auto; }
-    h2 { text-align: center; }
-    input, textarea, select { display: block; margin: 10px 0; width: 100%; padding: 8px; }
-    label { font-weight: bold; margin-top: 10px; display: block; }
-    button { padding: 10px 15px; background: #007bff; color: white; border: none; cursor: pointer; margin-top: 15px; width: 100%; }
-    button:hover { background: #0056b3; }
+    body { font-family: Arial; background:#f2f2f2; padding:20px; }
+    h2 { text-align:center; }
+    label { font-weight:bold; display:block; margin-top:10px; }
+    input, textarea, select {
+      width:100%; padding:8px; margin-top:4px;
+      border-radius:5px; border:1px solid #ccc;
+    }
+    button {
+      margin-top:15px; padding:10px;
+      background:green; color:white; border:none;
+      width:100%; font-size:16px;
+    }
   </style>
 </head>
 <body>
 
-<h2>RightClick Computers – CRM Acknowledgement Form</h2>
+<h2>RightClick CRM Acknowledgement</h2>
 
 <form id="crmForm">
   <label>Customer Name</label>
   <input type="text" id="customerName" required>
 
-  <label>Phone Number</label>
-  <input type="text" id="phone" required>
+  <label>Mobile Number</label>
+  <input type="text" id="mobile" required>
 
-  <label>Date & Time Received</label>
-  <input type="datetime-local" id="dateTime" required>
-
-  <label>Device Type</label>
-  <select id="device" onchange="updateFields()" required>
-    <option value="">Select Device</option>
-    <option value="Laptop">Laptop</option>
-    <option value="Desktop">Desktop</option>
-    <option value="Printer">Printer</option>
-    <option value="UPS">UPS</option>
-    <option value="Others">Others</option>
+  <label>Device</label>
+  <select id="device">
+    <option>Laptop</option>
+    <option>Desktop</option>
+    <option>Printer</option>
+    <option>UPS</option>
   </select>
 
-  <div id="deviceFields" style="display:none;">
-    <label>Device Name</label>
-    <input type="text" id="deviceName">
+  <label>Problem Reported</label>
+  <textarea id="problem"></textarea>
 
-    <label id="deviceIdLabel">Device ID</label>
-    <input type="text" id="deviceId">
+  <label>Estimation</label>
+  <input type="text" id="estimation">
 
-    <label>Accessories</label>
-    <select id="accessory" onchange="updateAccessoryDescription()"></select>
+  <label>Quotation</label>
+  <input type="text" id="quotation">
 
-    <div id="accessoryDescDiv" style="display:none;">
-      <label>Accessories Description</label>
-      <input type="text" id="accessoryDesc">
-    </div>
-  </div>
+  <label>Diagnosis</label>
+  <textarea id="diagnosis"></textarea>
 
-  <div id="otherDescDiv" style="display:none;">
-    <label>Description of Item</label>
-    <input type="text" id="otherDesc">
-  </div>
-
-  <label>Estimation & Quotation</label>
-  <input type="text" id="estimate">
-
-  <label>Diagnosis / Description</label>
-  <textarea id="diagnosis" rows="5"></textarea>
-
-  <button type="button" onclick="generateJob()">Generate Job ID & WhatsApp</button>
+  <button type="submit">Generate Job ID & Send WhatsApp</button>
 </form>
 
 <script>
-function updateFields() {
-  const device = document.getElementById('device').value;
-  const deviceFields = document.getElementById('deviceFields');
-  const deviceIdLabel = document.getElementById('deviceIdLabel');
-  const accessory = document.getElementById('accessory');
-  const otherDescDiv = document.getElementById('otherDescDiv');
+document.getElementById("crmForm").addEventListener("submit", function(e) {
+  e.preventDefault();
 
-  // Reset
-  deviceFields.style.display = 'none';
-  otherDescDiv.style.display = 'none';
-  document.getElementById('accessoryDescDiv').style.display = 'none';
-  accessory.innerHTML = '';
-  document.getElementById('deviceName').value = '';
-  document.getElementById('deviceId').value = '';
-  document.getElementById('otherDesc').value = '';
-  document.getElementById('accessoryDesc').value = '';
+  let jobId = "RC" + Date.now();
 
-  if(device === 'Laptop') {
-    deviceFields.style.display = 'block';
-    deviceIdLabel.innerText = 'Device ID';
-    accessory.innerHTML = `
-      <option value="">Select Accessory</option>
-      <option value="Without power cable and adapter">Without power cable and adapter</option>
-      <option value="With power cable and adapter">With power cable and adapter</option>
-      <option value="With adapter without power cable">With adapter without power cable</option>
-      <option value="Others">Others</option>
-    `;
-  } else if(device === 'Desktop') {
-    deviceFields.style.display = 'block';
-    deviceIdLabel.innerText = 'Device ID (Not required)';
-    accessory.innerHTML = `
-      <option value="">Select Accessory</option>
-      <option value="No cables or accessories received">No cables or accessories received</option>
-      <option value="Others">Others</option>
-    `;
-  } else if(device === 'Printer' || device === 'UPS') {
-    deviceFields.style.display = 'block';
-    deviceIdLabel.innerText = 'Device ID';
-    accessory.innerHTML = `
-      <option value="">Select Accessory</option>
-      <option value="No cables or accessories received">No cables or accessories received</option>
-      <option value="Others">Others</option>
-    `;
-  } else if(device === 'Others') {
-    otherDescDiv.style.display = 'block';
-  }
-}
-
-function updateAccessoryDescription() {
-  const accessory = document.getElementById('accessory').value;
-  if(accessory === 'Others') {
-    document.getElementById('accessoryDescDiv').style.display = 'block';
-  } else {
-    document.getElementById('accessoryDescDiv').style.display = 'none';
-  }
-}
-
-function generateJob() {
-  const jobId = "RC-" + Date.now();
-  const customer = document.getElementById("customerName").value;
-  const phone = document.getElementById("phone").value;
-  const dateTime = document.getElementById("dateTime").value;
-  const device = document.getElementById("device").value;
-  const deviceName = document.getElementById("deviceName").value;
-  const deviceId = document.getElementById("deviceId").value;
-  const accessory = document.getElementById("accessory").value;
-  const accessoryDesc = document.getElementById("accessoryDesc").value;
-  const otherDesc = document.getElementById("otherDesc").value;
-  const estimate = document.getElementById("estimate").value;
-  const diagnosis = document.getElementById("diagnosis").value;
-
-  const ownerNumber = "919059895427"; // Avinash Palla
-
-  // === Save job to localStorage ===
-  let jobs = JSON.parse(localStorage.getItem('jobs') || '[]');
-  jobs.push({
+  let data = {
     jobId: jobId,
-    customer: customer,
-    phone: phone,
-    dateTime: dateTime,
-    device: device,
-    deviceName: deviceName,
-    deviceId: deviceId,
-    accessory: accessory,
-    accessoryDesc: accessoryDesc || otherDesc,
-    estimate: estimate,
-    diagnosis: diagnosis,
-    status: 'Received',
-    repair: '',
-    paymentMode: '',
-    amount: ''
-  });
-  localStorage.setItem('jobs', JSON.stringify(jobs));
+    customerName: document.getElementById("customerName").value,
+    mobile: document.getElementById("mobile").value,
+    device: document.getElementById("device").value,
+    problem: document.getElementById("problem").value,
+    estimation: document.getElementById("estimation").value,
+    quotation: document.getElementById("quotation").value,
+    diagnosis: document.getElementById("diagnosis").value,
+    technician: "RightClick",
+    status: "Received"
+  };
 
-  // === Customer WhatsApp message ===
-  const messageToCustomer = `
-RIGHTCLICK COMPUTERS
-Service Acknowledgement
+  fetch("https://script.google.com/macros/s/AKfycbwtndD5BkIQsH63piVvHoM0TUlU-5cpb0vWxP0VVxasP9_CdWF7khWoPiB5_mWW6gVNMg/exec", {
+    method: "POST",
+    body: JSON.stringify(data)
+  })
+  .then(res => res.json())
+  .then(response => {
+    alert("Job Created Successfully!\nJob ID: " + jobId);
 
-Customer Name: ${customer}
-Phone: ${phone}
+    let msg = `RightClick Computers
 Job ID: ${jobId}
-Date & Time Received: ${dateTime}
+Name: ${data.customerName}
+Phone: ${data.mobile}
+Device: ${data.device}
+Problem: ${data.problem}
+Diagnosis: ${data.diagnosis}
 
-Device Type: ${device}
-Device Name: ${deviceName}
-Device ID: ${deviceId}
+Owner: Avinash Palla
++91 9059895427`;
 
-Accessories: ${accessory}
-Accessories Description: ${accessoryDesc || otherDesc}
-
-Estimation & Quotation: ${estimate}
-
-Diagnosis: ${diagnosis}
-
-Track your job here: [TRACKING LINK]
-`;
-
-  // === Owner WhatsApp message ===
-  const messageToOwner = `
-RIGHTCLICK COMPUTERS – NEW JOB CREATED
-
-Job ID: ${jobId}
-Customer Name: ${customer}
-Phone: ${phone}
-Device: ${device}
-Device Name: ${deviceName}
-Device ID: ${deviceId}
-
-Accessories: ${accessory}
-Accessories Description: ${accessoryDesc || otherDesc}
-
-Estimation & Quotation: ${estimate}
-
-Diagnosis / Description:
-${diagnosis}
-
-Track: [TRACKING LINK]
-`;
-
-  // === Open WhatsApp links ===
-  const customerWhatsApp = `https://wa.me/${phone}?text=${encodeURIComponent(messageToCustomer)}`;
-  const ownerWhatsApp = `https://wa.me/${ownerNumber}?text=${encodeURIComponent(messageToOwner)}`;
-
-  window.open(customerWhatsApp, "_blank");
-  window.open(ownerWhatsApp, "_blank");
-
-  alert("Job created successfully! Job ID: " + jobId);
-  document.getElementById("crmForm").reset();
-  document.getElementById("deviceFields").style.display = 'none';
-  document.getElementById("otherDescDiv").style.display = 'none';
-  document.getElementById("accessoryDescDiv").style.display = 'none';
-}
+    let whatsappUrl = `https://wa.me/91${data.mobile}?text=` + encodeURIComponent(msg);
+    window.open(whatsappUrl, "_blank");
+  })
+  .catch(err => alert("Error: " + err));
+});
 </script>
 
 </body>

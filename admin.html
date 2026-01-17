@@ -8,7 +8,6 @@
 </head>
 <body class="bg-gray-50 font-sans">
 
-  <!-- HEADER -->
   <header class="bg-white shadow p-4 flex items-center">
     <img src="https://github.com/keerthynaidu4u-netizen/rightclick-crm/blob/main/logo.png" alt="Logo" class="h-10 w-10 mr-4">
     <div class="flex flex-col">
@@ -17,7 +16,6 @@
     </div>
   </header>
 
-  <!-- MAIN TABLE -->
   <main class="p-4">
     <div class="overflow-x-auto">
       <table class="min-w-full border border-gray-300">
@@ -38,41 +36,26 @@
             <th class="px-2 py-1 border">Action</th>
           </tr>
         </thead>
-        <tbody id="adminTableBody">
-          <!-- Dynamic rows will be added here -->
-        </tbody>
+        <tbody id="adminTableBody"></tbody>
       </table>
     </div>
   </main>
 
-  <!-- SCRIPT -->
   <script>
-    // ✅ Your Google Apps Script Web App URL
-    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbzdwEAtfdDdKtvcp5lyLvqlo0aK4dyR_5M675mjoy0UJvr3SGMsUI7CBZVEld1tYSW1Nw/exec";
+    const SHEET_API_URL = "YOUR_WEB_APP_URL_HERE"; // Replace with your deployed Web App URL
 
     async function fetchJobs() {
       try {
         const response = await fetch(SHEET_API_URL);
         const jobs = await response.json();
-
-        // Handle error from Apps Script
-        if(jobs.error) {
-          console.error("Error from API:", jobs.error);
-          alert("Error fetching jobs: " + jobs.error);
-          return;
-        }
-
+        if(jobs.error) { alert(jobs.error); return; }
         renderAdminTable(jobs);
-      } catch (error) {
-        console.error("Error fetching jobs:", error);
-        alert("Error fetching jobs. Check console.");
-      }
+      } catch(e) { console.error(e); alert("Error fetching jobs"); }
     }
 
     function renderAdminTable(jobs) {
       const tableBody = document.getElementById("adminTableBody");
-      tableBody.innerHTML = ""; // clear previous
-
+      tableBody.innerHTML = "";
       jobs.forEach(job => {
         const row = document.createElement("tr");
         row.classList.add("border-b");
@@ -98,25 +81,34 @@
             </select>
           </td>
           <td class="px-2 py-1 border">
-            <button class="bg-blue-500 text-white px-2 py-1 rounded mt-1" onclick="sendUpdateWhatsApp('${job.JobID}')">Send Update</button>
+            <button class="bg-green-500 text-white px-2 py-1 rounded mt-1" onclick="sendWhatsApp('${job.JobID}','${job.CustomerName}','${job.Phone}','${job.Estimation}','${job.Diagnosis}')">Send WhatsApp</button>
           </td>
         `;
         tableBody.appendChild(row);
       });
     }
 
-    // Placeholder functions for future WhatsApp integration
-    function updateStatus(jobId, newStatus) {
-      console.log(`Job ${jobId} updated to status: ${newStatus}`);
-      // TODO: Connect to Google Sheet to update status
+    async function updateStatus(jobId, newStatus) {
+      try {
+        await fetch(SHEET_API_URL, {
+          method: 'POST',
+          body: JSON.stringify({JobID: jobId, Status: newStatus}),
+          headers: { 'Content-Type': 'application/json' }
+        });
+        alert(`Job ${jobId} status updated to ${newStatus}`);
+      } catch(e) { console.error(e); alert("Failed to update status"); }
     }
 
-    function sendUpdateWhatsApp(jobId) {
-      console.log(`Send WhatsApp for Job ${jobId}`);
-      // TODO: Open Click-to-WhatsApp link with prefilled message
+    function sendWhatsApp(jobId, name, phone, estimation, diagnosis) {
+      // Customer link
+      const customerMsg = encodeURIComponent(`RIGHTCLICK COMPUTERS\nJob ID: ${jobId}\nName: ${name}\nEstimation: ${estimation}\nDiagnosis: ${diagnosis}\nTrack your job: YOUR_TRACK_LINK`);
+      window.open(`https://wa.me/${phone}?text=${customerMsg}`, "_blank");
+
+      // Owner (Avinash) message
+      const ownerMsg = encodeURIComponent(`RIGHTCLICK COMPUTERS\nJob ID: ${jobId}\nCustomer: ${name}\nPhone: ${phone}\nEstimation: ${estimation}\nDiagnosis: ${diagnosis}\nOwner Contact: +919059895427`);
+      window.open(`https://wa.me/919059895427?text=${ownerMsg}`, "_blank");
     }
 
-    // Fetch jobs on page load
     fetchJobs();
   </script>
 

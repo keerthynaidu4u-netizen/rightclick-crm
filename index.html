@@ -3,9 +3,11 @@
 <head>
   <title>RightClick CRM</title>
   <style>
-    body { font-family: Arial; padding: 20px; }
+    body { font-family: Arial; padding: 20px; max-width: 500px; margin: auto; }
+    h2 { text-align: center; }
     input, textarea, select { display: block; margin: 10px 0; width: 100%; padding: 8px; }
-    button { padding: 10px 15px; background: #007bff; color: white; border: none; cursor: pointer; }
+    label { font-weight: bold; margin-top: 10px; display: block; }
+    button { padding: 10px 15px; background: #007bff; color: white; border: none; cursor: pointer; margin-top: 15px; width: 100%; }
     button:hover { background: #0056b3; }
   </style>
 </head>
@@ -14,9 +16,17 @@
 <h2>RightClick Computers – CRM Acknowledgement Form</h2>
 
 <form id="crmForm">
-  <input placeholder="Customer Name" id="customerName" required>
-  <input placeholder="Phone Number" id="phone" required>
-  <select id="device">
+  <label>Customer Name</label>
+  <input type="text" id="customerName" required>
+
+  <label>Phone Number</label>
+  <input type="text" id="phone" required>
+
+  <label>Date & Time Received</label>
+  <input type="datetime-local" id="dateTime" required>
+
+  <label>Device Type</label>
+  <select id="device" onchange="updateFields()" required>
     <option value="">Select Device</option>
     <option value="Laptop">Laptop</option>
     <option value="Desktop">Desktop</option>
@@ -24,21 +34,133 @@
     <option value="UPS">UPS</option>
     <option value="Others">Others</option>
   </select>
-  <input placeholder="Estimation & Quotation" id="estimate">
-  <textarea placeholder="Diagnosis / Description" id="diagnosis"></textarea>
+
+  <div id="deviceFields" style="display:none;">
+    <label>Device Name</label>
+    <input type="text" id="deviceName">
+
+    <label id="deviceIdLabel">Device ID</label>
+    <input type="text" id="deviceId">
+
+    <label>Accessories</label>
+    <select id="accessory" onchange="updateAccessoryDescription()"></select>
+
+    <div id="accessoryDescDiv" style="display:none;">
+      <label>Accessories Description</label>
+      <input type="text" id="accessoryDesc">
+    </div>
+  </div>
+
+  <div id="otherDescDiv" style="display:none;">
+    <label>Description of Item</label>
+    <input type="text" id="otherDesc">
+  </div>
+
+  <label>Estimation & Quotation</label>
+  <input type="text" id="estimate">
+
+  <label>Diagnosis / Description</label>
+  <textarea id="diagnosis" rows="5"></textarea>
+
   <button type="button" onclick="generateJob()">Generate Job ID & WhatsApp</button>
 </form>
 
 <script>
+function updateFields() {
+  const device = document.getElementById('device').value;
+  const deviceFields = document.getElementById('deviceFields');
+  const deviceIdLabel = document.getElementById('deviceIdLabel');
+  const accessory = document.getElementById('accessory');
+  const otherDescDiv = document.getElementById('otherDescDiv');
+
+  // Reset
+  deviceFields.style.display = 'none';
+  otherDescDiv.style.display = 'none';
+  document.getElementById('accessoryDescDiv').style.display = 'none';
+  accessory.innerHTML = '';
+
+  if(device === 'Laptop') {
+    deviceFields.style.display = 'block';
+    deviceIdLabel.innerText = 'Device ID';
+    accessory.innerHTML = `
+      <option value="">Select Accessory</option>
+      <option value="Without power cable and adapter">Without power cable and adapter</option>
+      <option value="With power cable and adapter">With power cable and adapter</option>
+      <option value="With adapter without power cable">With adapter without power cable</option>
+      <option value="Others">Others</option>
+    `;
+  } else if(device === 'Desktop') {
+    deviceFields.style.display = 'block';
+    deviceIdLabel.innerText = 'Device ID (Not required)';
+    document.getElementById('deviceId').value = '';
+    accessory.innerHTML = `
+      <option value="">Select Accessory</option>
+      <option value="No cables or accessories received">No cables or accessories received</option>
+      <option value="Others">Others</option>
+    `;
+  } else if(device === 'Printer' || device === 'UPS') {
+    deviceFields.style.display = 'block';
+    deviceIdLabel.innerText = 'Device ID';
+    accessory.innerHTML = `
+      <option value="">Select Accessory</option>
+      <option value="No cables or accessories received">No cables or accessories received</option>
+      <option value="Others">Others</option>
+    `;
+  } else if(device === 'Others') {
+    otherDescDiv.style.display = 'block';
+  }
+}
+
+function updateAccessoryDescription() {
+  const accessory = document.getElementById('accessory').value;
+  if(accessory === 'Others') {
+    document.getElementById('accessoryDescDiv').style.display = 'block';
+  } else {
+    document.getElementById('accessoryDescDiv').style.display = 'none';
+  }
+}
+
 function generateJob() {
   const jobId = "RC-" + Date.now();
   const customer = document.getElementById("customerName").value;
   const phone = document.getElementById("phone").value;
+  const dateTime = document.getElementById("dateTime").value;
   const device = document.getElementById("device").value;
+  const deviceName = document.getElementById("deviceName").value;
+  const deviceId = document.getElementById("deviceId").value;
+  const accessory = document.getElementById("accessory").value;
+  const accessoryDesc = document.getElementById("accessoryDesc").value;
+  const otherDesc = document.getElementById("otherDesc").value;
   const estimate = document.getElementById("estimate").value;
   const diagnosis = document.getElementById("diagnosis").value;
-  const ownerNumber = "919059895427";
 
+  const ownerNumber = "919059895427"; // Avinash Palla
+
+  // Build Customer Message
+  const messageToCustomer = `
+RIGHTCLICK COMPUTERS
+Service Acknowledgement
+
+Customer Name: ${customer}
+Phone: ${phone}
+Job ID: ${jobId}
+Date & Time Received: ${dateTime}
+
+Device Type: ${device}
+Device Name: ${deviceName}
+Device ID: ${deviceId}
+
+Accessories: ${accessory}
+Accessories Description: ${accessoryDesc || otherDesc}
+
+Estimation & Quotation: ${estimate}
+
+Diagnosis: ${diagnosis}
+
+Track your job here: [TRACKING LINK]
+`;
+
+  // Build Owner Message
   const messageToOwner = `
 RIGHTCLICK COMPUTERS – NEW JOB CREATED
 
@@ -46,21 +168,28 @@ Job ID: ${jobId}
 Customer Name: ${customer}
 Phone: ${phone}
 Device: ${device}
+Device Name: ${deviceName}
+Device ID: ${deviceId}
 
-Estimation & Quotation:
-${estimate}
+Accessories: ${accessory}
+Accessories Description: ${accessoryDesc || otherDesc}
+
+Estimation & Quotation: ${estimate}
 
 Diagnosis / Description:
 ${diagnosis}
 
-Track: [Your Tracking Link]
+Track: [TRACKING LINK]
 `;
 
-  const whatsappLink = `https://wa.me/${ownerNumber}?text=${encodeURIComponent(messageToOwner)}`;
-  window.open(whatsappLink, "_blank");
+  // Open WhatsApp links
+  const customerWhatsApp = `https://wa.me/${phone}?text=${encodeURIComponent(messageToCustomer)}`;
+  const ownerWhatsApp = `https://wa.me/${ownerNumber}?text=${encodeURIComponent(messageToOwner)}`;
+
+  window.open(customerWhatsApp, "_blank");
+  window.open(ownerWhatsApp, "_blank");
 }
 </script>
 
 </body>
 </html>
-

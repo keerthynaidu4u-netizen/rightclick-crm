@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RightClick CRM</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    input, textarea, select { display: block; margin: 10px 0; width: 100%; padding: 8px; }
+    button { padding: 10px 15px; background: #007bff; color: white; border: none; cursor: pointer; }
+    button:hover { background: #0056b3; }
+  </style>
+</head>
+<body>
+
+<h2>RightClick Computers – CRM Acknowledgement Form</h2>
+
+<form id="crmForm">
+  <input placeholder="Customer Name" id="customerName" required>
+  <input placeholder="Phone Number" id="phone" required>
+  <select id="device">
+    <option value="">Select Device</option>
+    <option value="Laptop">Laptop</option>
+    <option value="Desktop">Desktop</option>
+    <option value="Printer">Printer</option>
+    <option value="UPS">UPS</option>
+    <option value="Others">Others</option>
+  </select>
+  <input placeholder="Estimation & Quotation" id="estimate">
+  <textarea placeholder="Diagnosis / Description" id="diagnosis"></textarea>
+  <button type="button" onclick="generateJob()">Generate Job ID & WhatsApp</button>
+</form>
+
+<script>
+function generateJob() {
+  const jobId = "RC-" + Date.now();
+  const customer = document.getElementById("customerName").value;
+  const phone = document.getElementById("phone").value;
+  const device = document.getElementById("device").value;
+  const estimate = document.getElementById("estimate").value;
+  const diagnosis = document.getElementById("diagnosis").value;
+  const ownerNumber = "919059895427";
+
+  const messageToOwner = `
+RIGHTCLICK COMPUTERS – NEW JOB CREATED
+
+Job ID: ${jobId}
+Customer Name: ${customer}
+Phone: ${phone}
+Device: ${device}
+
+Estimation & Quotation:
+${estimate}
+
+Diagnosis / Description:
+${diagnosis}
+
+Track: [Your Tracking Link]
+`;
+
+  const whatsappLink = `https://wa.me/${ownerNumber}?text=${encodeURIComponent(messageToOwner)}`;
+  window.open(whatsappLink, "_blank");
+}
+</script>
+
+</body>
+</html>
+

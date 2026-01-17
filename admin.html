@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RightClick CRM - Admin Panel</title>
+  <style>
+    body { font-family: Arial; padding: 20px; max-width: 600px; margin: auto; }
+    h2 { text-align: center; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f2f2f2; }
+    select, input { width: 100%; padding: 5px; }
+    button { padding: 5px 10px; margin: 2px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<h2>RightClick Computers – Admin Panel</h2>
+
+<table id="jobTable">
+  <thead>
+    <tr>
+      <th>Job ID</th>
+      <th>Name</th>
+      <th>Phone</th>
+      <th>Device</th>
+      <th>Status</th>
+      <th>Repair</th>
+      <th>Payment Mode</th>
+      <th>Amount</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Jobs will appear here -->
+  </tbody>
+</table>
+
+<script>
+const ownerNumber = "919059895427"; // Avinash Palla
+
+// Load jobs from localStorage
+let jobs = JSON.parse(localStorage.getItem('jobs') || '[]');
+renderTable();
+
+function renderTable() {
+  const tbody = document.querySelector("#jobTable tbody");
+  tbody.innerHTML = '';
+  jobs.forEach((job, index) => {
+    const tr = document.createElement('tr');
+
+    tr.innerHTML = `
+      <td>${job.jobId}</td>
+      <td>${job.customer}</td>
+      <td>${job.phone}</td>
+      <td>${job.device}</td>
+      <td>
+        <select onchange="updateStatus(${index}, this.value)">
+          <option value="Received" ${job.status==='Received'?'selected':''}>Received</option>
+          <option value="In Progress" ${job.status==='In Progress'?'selected':''}>In Progress</option>
+          <option value="Ready" ${job.status==='Ready'?'selected':''}>Ready</option>
+          <option value="Delivered" ${job.status==='Delivered'?'selected':''}>Delivered</option>
+        </select>
+      </td>
+      <td><input type="text" value="${job.repair || ''}" ${job.status==='Delivered'?'':'readonly'}></td>
+      <td>
+        <select ${job.status==='Delivered'?'':'disabled'}>
+          <option value="">Select</option>
+          <option value="Cash" ${job.paymentMode==='Cash'?'selected':''}>Cash</option>
+          <option value="PhonePe" ${job.paymentMode==='PhonePe'?'selected':''}>PhonePe</option>
+        </select>
+      </td>
+      <td><input type="number" value="${job.amount || ''}" ${job.status==='Delivered'?'':'readonly'}></td>
+      <td>
+        <button onclick="sendWhatsApp(${index})">Send WhatsApp</button>
+        <button onclick="deleteJob(${index})">Delete</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function updateStatus(index, status) {
+  jobs[index].status = status;
+  localStorage.setItem('jobs', JSON.stringify(jobs));
+  renderTable();
+}
+
+function sendWhatsApp(index) {
+  const job = jobs[index];
+  const customerMessage = `
+RIGHTCLICK COMPUTERS
+
+Your job status: ${job.status}
+
+Job ID: ${job.jobId}
+Repair Done: ${job.repair || ''}
+Payment Mode: ${job.paymentMode || ''}
+Amount: ${job.amount || ''}
+
+Track: [TRACKING LINK]
+`;
+
+  const ownerMessage = `
+RIGHTCLICK COMPUTERS – STATUS UPDATE
+
+Job ID: ${job.jobId}
+Customer Name: ${job.customer}
+Phone: ${job.phone}
+Status: ${job.status}
+Repair Done: ${job.repair || ''}
+Payment Mode: ${job.paymentMode || ''}
+Amount: ${job.amount || ''}
+
+Diagnosis / Descrip

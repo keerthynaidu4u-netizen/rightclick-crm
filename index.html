@@ -78,6 +78,10 @@ function updateFields() {
   otherDescDiv.style.display = 'none';
   document.getElementById('accessoryDescDiv').style.display = 'none';
   accessory.innerHTML = '';
+  document.getElementById('deviceName').value = '';
+  document.getElementById('deviceId').value = '';
+  document.getElementById('otherDesc').value = '';
+  document.getElementById('accessoryDesc').value = '';
 
   if(device === 'Laptop') {
     deviceFields.style.display = 'block';
@@ -92,7 +96,6 @@ function updateFields() {
   } else if(device === 'Desktop') {
     deviceFields.style.display = 'block';
     deviceIdLabel.innerText = 'Device ID (Not required)';
-    document.getElementById('deviceId').value = '';
     accessory.innerHTML = `
       <option value="">Select Accessory</option>
       <option value="No cables or accessories received">No cables or accessories received</option>
@@ -120,27 +123,7 @@ function updateAccessoryDescription() {
   }
 }
 
-  function generateJob() {
-    // Save job to localStorage
-let jobs = JSON.parse(localStorage.getItem('jobs') || '[]');
-jobs.push({
-  jobId: jobId,
-  customer: customer,
-  phone: phone,
-  dateTime: dateTime,
-  device: device,
-  deviceName: deviceName,
-  deviceId: deviceId,
-  accessory: accessory,
-  accessoryDesc: accessoryDesc || otherDesc,
-  estimate: estimate,
-  diagnosis: diagnosis,
-  status: 'Received',
-  repair: '',
-  paymentMode: '',
-  amount: ''
-});
-localStorage.setItem('jobs', JSON.stringify(jobs));
+function generateJob() {
   const jobId = "RC-" + Date.now();
   const customer = document.getElementById("customerName").value;
   const phone = document.getElementById("phone").value;
@@ -156,7 +139,28 @@ localStorage.setItem('jobs', JSON.stringify(jobs));
 
   const ownerNumber = "919059895427"; // Avinash Palla
 
-  // Build Customer Message
+  // === Save job to localStorage ===
+  let jobs = JSON.parse(localStorage.getItem('jobs') || '[]');
+  jobs.push({
+    jobId: jobId,
+    customer: customer,
+    phone: phone,
+    dateTime: dateTime,
+    device: device,
+    deviceName: deviceName,
+    deviceId: deviceId,
+    accessory: accessory,
+    accessoryDesc: accessoryDesc || otherDesc,
+    estimate: estimate,
+    diagnosis: diagnosis,
+    status: 'Received',
+    repair: '',
+    paymentMode: '',
+    amount: ''
+  });
+  localStorage.setItem('jobs', JSON.stringify(jobs));
+
+  // === Customer WhatsApp message ===
   const messageToCustomer = `
 RIGHTCLICK COMPUTERS
 Service Acknowledgement
@@ -180,7 +184,7 @@ Diagnosis: ${diagnosis}
 Track your job here: [TRACKING LINK]
 `;
 
-  // Build Owner Message
+  // === Owner WhatsApp message ===
   const messageToOwner = `
 RIGHTCLICK COMPUTERS – NEW JOB CREATED
 
@@ -202,12 +206,18 @@ ${diagnosis}
 Track: [TRACKING LINK]
 `;
 
-  // Open WhatsApp links
+  // === Open WhatsApp links ===
   const customerWhatsApp = `https://wa.me/${phone}?text=${encodeURIComponent(messageToCustomer)}`;
   const ownerWhatsApp = `https://wa.me/${ownerNumber}?text=${encodeURIComponent(messageToOwner)}`;
 
   window.open(customerWhatsApp, "_blank");
   window.open(ownerWhatsApp, "_blank");
+
+  alert("Job created successfully! Job ID: " + jobId);
+  document.getElementById("crmForm").reset();
+  document.getElementById("deviceFields").style.display = 'none';
+  document.getElementById("otherDescDiv").style.display = 'none';
+  document.getElementById("accessoryDescDiv").style.display = 'none';
 }
 </script>
 

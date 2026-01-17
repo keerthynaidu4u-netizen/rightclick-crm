@@ -2,48 +2,68 @@
 <html>
 <head>
   <title>RightClick CRM Acknowledgement</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: Arial; background:#f2f2f2; padding:20px; }
+    body { font-family: Arial; background:#f2f2f2; padding:15px; }
     h2 { text-align:center; }
-    label { font-weight:bold; display:block; margin-top:10px; }
-    input, textarea, select {
+    label { font-weight:bold; margin-top:10px; display:block; }
+    input, select, textarea {
       width:100%; padding:8px; margin-top:4px;
       border-radius:5px; border:1px solid #ccc;
     }
     button {
-      margin-top:15px; padding:10px;
-      background:green; color:white; border:none;
-      width:100%; font-size:16px;
+      margin-top:15px; padding:12px;
+      background:green; color:white;
+      border:none; width:100%; font-size:16px;
+      border-radius:6px;
     }
   </style>
 </head>
 <body>
 
-<h2>RightClick CRM Acknowledgement</h2>
+<h2>RightClick CRM Acknowledgement Form</h2>
 
 <form id="crmForm">
+
   <label>Customer Name</label>
   <input type="text" id="customerName" required>
 
-  <label>Mobile Number</label>
-  <input type="text" id="mobile" required>
+  <label>Phone Number</label>
+  <input type="text" id="phone" required>
 
-  <label>Device</label>
-  <select id="device">
-    <option>Laptop</option>
-    <option>Desktop</option>
-    <option>Printer</option>
-    <option>UPS</option>
+  <label>Date & Time Received</label>
+  <input type="datetime-local" id="dateTime" required>
+
+  <label>Device Type</label>
+  <select id="deviceType" onchange="deviceChanged()">
+    <option value="">Select</option>
+    <option value="Laptop">Laptop</option>
+    <option value="Desktop">Desktop</option>
+    <option value="Printer">Printer</option>
+    <option value="UPS">UPS</option>
+    <option value="Other">Other</option>
   </select>
 
-  <label>Problem Reported</label>
-  <textarea id="problem"></textarea>
+  <div id="deviceNameDiv" style="display:none;">
+    <label>Device Name</label>
+    <input type="text" id="deviceName">
+  </div>
+
+  <div id="deviceIdDiv" style="display:none;">
+    <label>Device ID / Serial No</label>
+    <input type="text" id="deviceID">
+  </div>
+
+  <label>Accessories</label>
+  <select id="accessories" onchange="accessoryChanged()"></select>
+
+  <div id="accessoryDescDiv" style="display:none;">
+    <label>Accessories Description</label>
+    <textarea id="accessoriesDescription"></textarea>
+  </div>
 
   <label>Estimation</label>
   <input type="text" id="estimation">
-
-  <label>Quotation</label>
-  <input type="text" id="quotation">
 
   <label>Diagnosis</label>
   <textarea id="diagnosis"></textarea>
@@ -52,47 +72,105 @@
 </form>
 
 <script>
-document.getElementById("crmForm").addEventListener("submit", function(e) {
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwtndD5BkIQsH63piVvHoM0TUlU-5cpb0vWxP0VVxasP9_CdWF7khWoPiB5_mWW6gVNMg/exec";
+
+function deviceChanged() {
+  const type = document.getElementById("deviceType").value;
+  const accessories = document.getElementById("accessories");
+
+  document.getElementById("deviceNameDiv").style.display = "none";
+  document.getElementById("deviceIdDiv").style.display = "none";
+
+  accessories.innerHTML = "";
+
+  if(type === "Laptop") {
+    document.getElementById("deviceNameDiv").style.display = "block";
+    document.getElementById("deviceIdDiv").style.display = "block";
+    accessories.innerHTML = `
+      <option>With Adapter & Power Cable</option>
+      <option>With Adapter Only</option>
+      <option>Without Adapter & Cable</option>
+      <option>Other</option>`;
+  }
+  else if(type === "Desktop") {
+    document.getElementById("deviceNameDiv").style.display = "block";
+    accessories.innerHTML = `
+      <option>No cables received</option>
+      <option>Other</option>`;
+  }
+  else if(type === "Printer" || type === "UPS") {
+    document.getElementById("deviceNameDiv").style.display = "block";
+    document.getElementById("deviceIdDiv").style.display = "block";
+    accessories.innerHTML = `
+      <option>With Power Cable</option>
+      <option>Without Power Cable</option>
+      <option>Other</option>`;
+  }
+  else if(type === "Other") {
+    accessories.innerHTML = `<option>Other</option>`;
+  }
+}
+
+function accessoryChanged() {
+  const val = document.getElementById("accessories").value;
+  document.getElementById("accessoryDescDiv").style.display = (val === "Other") ? "block" : "none";
+}
+
+document.getElementById("crmForm").addEventListener("submit", function(e){
   e.preventDefault();
 
-  let jobId = "RC" + Date.now();
+  const jobId = "RC" + Date.now();
+  const now = new Date().toLocaleString();
 
-  let data = {
+  const data = {
     jobId: jobId,
-    customerName: document.getElementById("customerName").value,
-    mobile: document.getElementById("mobile").value,
-    device: document.getElementById("device").value,
-    problem: document.getElementById("problem").value,
-    estimation: document.getElementById("estimation").value,
-    quotation: document.getElementById("quotation").value,
-    diagnosis: document.getElementById("diagnosis").value,
-    technician: "RightClick",
-    status: "Received"
+    customerName: customerName.value,
+    phone: phone.value,
+    dateTime: dateTime.value,
+    deviceType: deviceType.value,
+    deviceName: deviceName.value || "",
+    deviceId: deviceID.value || "",
+    accessories: accessories.value,
+    accessoriesDesc: accessoriesDescription.value || "",
+    estimation: estimation.value,
+    diagnosis: diagnosis.value,
+    status: "Received",
+    repairDone: "",
+    paymentMode: "",
+    amount: "",
+    createdAt: now
   };
 
-  fetch("https://script.google.com/macros/s/AKfycbwtndD5BkIQsH63piVvHoM0TUlU-5cpb0vWxP0VVxasP9_CdWF7khWoPiB5_mWW6gVNMg/exec", {
-    method: "POST",
+  fetch(SCRIPT_URL,{
+    method:"POST",
     body: JSON.stringify(data)
   })
   .then(res => res.json())
-  .then(response => {
-    alert("Job Created Successfully!\nJob ID: " + jobId);
+  .then(() => {
+    alert("Job Created: " + jobId);
 
-    let msg = `RightClick Computers
+    const msg = `RightClick Computers
+
 Job ID: ${jobId}
 Name: ${data.customerName}
-Phone: ${data.mobile}
-Device: ${data.device}
-Problem: ${data.problem}
+Phone: ${data.phone}
+Date: ${data.dateTime}
+
+Device: ${data.deviceType}
+Device Name: ${data.deviceName}
+Device ID: ${data.deviceId}
+Accessories: ${data.accessories}
+
+Estimation: ${data.estimation}
 Diagnosis: ${data.diagnosis}
+
+Status: Received
 
 Owner: Avinash Palla
 +91 9059895427`;
 
-    let whatsappUrl = `https://wa.me/91${data.mobile}?text=` + encodeURIComponent(msg);
-    window.open(whatsappUrl, "_blank");
-  })
-  .catch(err => alert("Error: " + err));
+    window.open(`https://wa.me/91${data.phone}?text=${encodeURIComponent(msg)}`,"_blank");
+  });
 });
 </script>
 

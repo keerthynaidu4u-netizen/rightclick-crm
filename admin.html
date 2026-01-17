@@ -47,14 +47,15 @@
 
   <!-- SCRIPT -->
   <script>
-    // === Replace this with your Web App URL from Google Apps Script ===
-    const SHEET_API_URL = "YOUR_WEB_APP_URL_HERE";
+    // ✅ Your Google Apps Script Web App URL
+    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbzdwEAtfdDdKtvcp5lyLvqlo0aK4dyR_5M675mjoy0UJvr3SGMsUI7CBZVEld1tYSW1Nw/exec";
 
     async function fetchJobs() {
       try {
         const response = await fetch(SHEET_API_URL);
         const jobs = await response.json();
 
+        // Handle error from Apps Script
         if(jobs.error) {
           console.error("Error from API:", jobs.error);
           alert("Error fetching jobs: " + jobs.error);
@@ -107,7 +108,7 @@
     // Placeholder functions for future WhatsApp integration
     function updateStatus(jobId, newStatus) {
       console.log(`Job ${jobId} updated to status: ${newStatus}`);
-      // TODO: Connect to Google Sheet or backend to update status
+      // TODO: Connect to Google Sheet to update status
     }
 
     function sendUpdateWhatsApp(jobId) {
@@ -118,5 +119,6 @@
     // Fetch jobs on page load
     fetchJobs();
   </script>
+
 </body>
 </html>
